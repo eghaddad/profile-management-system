@@ -1,0 +1,81 @@
+// This is your Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AuthProvider {
+  local
+  google
+  github
+}
+
+enum ProfileVisibility {
+  public
+  private
+  friends_only
+}
+
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  passwordHash  String?        @map("password_hash")
+  authProvider  AuthProvider   @default(local) @map("auth_provider")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  
+  profile       Profile?
+  settings      ProfileSettings?
+  avatarUploads AvatarUpload[]
+
+  @@map("users")
+}
+
+model Profile {
+  id          String   @id @default(uuid())
+  userId      String   @unique @map("user_id")
+  displayName String   @map("display_name")
+  bio         String?
+  avatarUrl   String?  @map("avatar_url")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+model ProfileSettings {
+  id                  String            @id @default(uuid())
+  userId              String            @unique @map("user_id")
+  profileVisibility   ProfileVisibility @default(public) @map("profile_visibility")
+  showEmail           Boolean           @default(false) @map("show_email")
+  emailNotifications  Boolean           @default(true) @map("email_notifications")
+  createdAt           DateTime          @default(now()) @map("created_at")
+  updatedAt           DateTime          @updatedAt @map("updated_at")
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profile_settings")
+}
+
+model AvatarUpload {
+  id               String   @id @default(uuid())
+  userId           String   @map("user_id")
+  originalFilename String   @map("original_filename")
+  storedFilename   String   @map("stored_filename")
+  filePath         String   @map("file_path")
+  fileSize         Int      @map("file_size")
+  mimeType         String   @map("mime_type")
+  cropData         Json?    @map("crop_data")
+  createdAt        DateTime @default(now()) @map("created_at")
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("avatar_uploads")
+}
