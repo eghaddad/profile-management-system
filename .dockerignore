@@ -1,0 +1,13 @@
+node_modules
+dist
+.git
+.gitignore
+.env
+.env.*
+*.log
+uploads/*
+!uploads/.gitkeep
+.railway
+DEPLOYMENT.md
+STEP-2-SUMMARY.md
+README.md
